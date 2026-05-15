@@ -1,168 +1,229 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Central de Créditos V2 - Integrado</title>
-    <style>
-        body { background: #0f172a; color: #f1f5f9; font-family: sans-serif; padding: 20px; margin: 0; }
-        h1 { color: #38bdf8; text-align: center; font-size: 1.5rem; text-transform: uppercase; }
-        .card { background: #1e293b; padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #334155; max-width: 900px; margin-left: auto; margin-right: auto; }
-        .resumo-lucro { display: flex; justify-content: center; gap: 20px; margin-bottom: 20px; }
-        .box-lucro { background: #0ea5e9; padding: 15px; border-radius: 10px; text-align: center; min-width: 150px; }
-        input, select { width: 100%; padding: 12px; margin-bottom: 10px; background: #0f172a; border: 1px solid #334155; color: white; border-radius: 8px; box-sizing: border-box; }
-        button { width: 100%; padding: 14px; background: #0284c7; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; text-transform: uppercase; }
-        .busca { margin-bottom: 15px; border-color: #38bdf8; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th { background: #334155; color: #38bdf8; padding: 12px; text-align: left; font-size: 12px; text-transform: uppercase; }
-        td { padding: 12px; border-bottom: 1px solid #334155; font-size: 14px; }
-        .lucro-txt { color: #4ade80; font-weight: bold; }
-        .btn-del { background: #ef4444; width: auto; padding: 5px 8px; font-size: 11px; cursor: pointer; border-radius: 4px; border: none; color: white; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Central de Créditos - Detalhada</title>
+
+<style>
+    body {
+        background: #0f172a;
+        color: #f1f5f9;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    h1 { color: #38bdf8; text-shadow: 0 0 10px rgba(56, 189, 248, 0.2); }
+
+    .card {
+        background: #1e293b;
+        padding: 25px;
+        border-radius: 12px;
+        margin-bottom: 25px;
+        width: 100%;
+        max-width: 950px; /* Aumentei um pouco para caber a tabela maior */
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+        border: 1px solid #334155;
+    }
+
+    h2 {
+        font-size: 1.2rem;
+        margin-top: 0;
+        border-bottom: 2px solid #38bdf8;
+        display: inline-block;
+        padding-bottom: 5px;
+        margin-bottom: 20px;
+    }
+
+    input, select {
+        width: 100%;
+        padding: 12px;
+        margin-top: 12px;
+        border: 2px solid #334155;
+        border-radius: 8px;
+        background: #0f172a;
+        color: white;
+        box-sizing: border-box;
+    }
+
+    button {
+        width: 100%;
+        padding: 12px;
+        margin-top: 15px;
+        border: none;
+        border-radius: 8px;
+        background: #0284c7;
+        color: white;
+        font-weight: bold;
+        cursor: pointer;
+    }
+
+    button:hover { background: #0ea5e9; }
+
+    .table-container { overflow-x: auto; }
+
+    table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        margin-top: 10px;
+    }
+
+    th, td {
+        padding: 12px;
+        text-align: left;
+        border-bottom: 1px solid #334155;
+        font-size: 0.85rem;
+    }
+
+    th {
+        background: #334155;
+        color: #38bdf8;
+        text-transform: uppercase;
+    }
+
+    .lucro { color: #4ade80; font-weight: bold; }
+    .unitario { color: #94a3b8; font-size: 0.75rem; }
+
+    .copy {
+        background: #16a34a;
+        padding: 6px;
+        font-size: 0.7rem;
+        margin-top: 0;
+    }
+</style>
 </head>
 <body>
 
-    <h1>💳 Central de Créditos V2</h1>
+<h1>💳 Central de Créditos</h1>
 
-    <div class="resumo-lucro">
-        <div class="box-lucro">
-            <p style="font-size: 10px; margin: 0;">LUCRO TOTAL ACUMULADO</p>
-            <h2 id="lucro-geral">R$ 0,00</h2>
-        </div>
+<div class="card">
+    <h2>Adicionar Crédito</h2>
+    <input type="text" id="revendedor" placeholder="Nome do Revendedor">
+    <input type="text" id="servidor" placeholder="Nome do Servidor (Ex: Gold, Diamond)">
+
+    <select id="quantidade">
+        <option value="">Selecione a Quantidade</option>
+        <option value="10">10 Créditos</option>
+        <option value="50">50 Créditos</option>
+        <option value="100">100 Créditos</option>
+        <option value="500">500 Créditos</option>
+        <option value="1000">1000 Créditos</option>
+    </select>
+
+    <input type="number" id="master" placeholder="Valor Total Master (O que você paga)">
+    <input type="number" id="revenda" placeholder="Valor Total Revenda (O que você recebe)">
+
+    <button onclick="salvar()">Salvar Registro</button>
+</div>
+
+<div class="card">
+    <h2>Tabela de Registros Detalhada</h2>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Revendedor</th>
+                    <th>Servidor</th>
+                    <th>Qtd</th>
+                    <th>Master (Total)</th>
+                    <th>Custo/Créd.</th>
+                    <th>Revenda (Total)</th>
+                    <th>Venda/Créd.</th>
+                    <th>Lucro Total</th>
+                    <th>Ação</th>
+                </tr>
+            </thead>
+            <tbody id="tabela"></tbody>
+        </table>
     </div>
+</div>
 
-    <div class="card">
-        <h2>Novo Registro</h2>
-        <input type="text" id="revendedor" placeholder="Nome do Revendedor">
-        <input type="text" id="servidor" placeholder="Servidor">
-        <select id="quantidade">
-            <option value="10">10 Créditos</option>
-            <option value="50">50 Créditos</option>
-            <option value="100">100 Créditos</option>
-            <option value="500">500 Créditos</option>
-        </select>
-        <div style="display: flex; gap: 10px;">
-            <input type="number" id="master" placeholder="Valor Master">
-            <input type="number" id="revenda" placeholder="Valor Venda">
-        </div>
-        <button id="btnSalvar">SALVAR NO FIREBASE</button>
-    </div>
+<script>
+let dados = [];
 
-    <div class="card">
-        <h2>Histórico</h2>
-        <input type="text" id="inputBusca" class="busca" placeholder="🔍 Pesquisar revendedor...">
-        <div style="overflow-x: auto;">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Revendedor</th>
-                        <th>Qtd</th>
-                        <th>Master</th>
-                        <th>Venda</th>
-                        <th>Lucro</th>
-                        <th>Ação</th>
-                    </tr>
-                </thead>
-                <tbody id="tabela-corpo"></tbody>
-            </table>
-        </div>
-    </div>
+function salvar(){
+    let revendedor = document.getElementById("revendedor").value;
+    let servidor = document.getElementById("servidor").value;
+    let quantidade = document.getElementById("quantidade").value;
+    let master = document.getElementById("master").value;
+    let revenda = document.getElementById("revenda").value;
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, doc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    if(!revendedor || !quantidade || !master || !revenda) {
+        alert("Por favor, preencha todos os campos!");
+        return;
+    }
 
-        // CONFIGURAÇÃO UNIFICADA
-        const firebaseConfig = {
-            apiKey: "AIzaSyCsqUeXLDpUhxvHxXOC19iRoQhPuYOGpFw",
-            authDomain: "amigosaru-6a228.firebaseapp.com",
-            projectId: "amigosaru-6a228",
-            storageBucket: "amigosaru-6a228.firebasestorage.app",
-            messagingSenderId: "1024825583351",
-            appId: "1:1024825583351:web:0e37cbbde2e279136c55f2" // Usando o AppId final
-        };
+    let qtdNum = Number(quantidade);
+    let masterTotal = Number(master);
+    let revendaTotal = Number(revenda);
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const ref = collection(db, "creditos_revenda");
+    let custoUnitario = masterTotal / qtdNum;
+    let vendaUnitario = revendaTotal / qtdNum;
+    let lucro = revendaTotal - masterTotal;
 
-        // SALVAR
-        document.getElementById("btnSalvar").onclick = async () => {
-            const r = document.getElementById("revendedor").value;
-            const m = Number(document.getElementById("master").value);
-            const v = Number(document.getElementById("revenda").value);
-            const s = document.getElementById("servidor").value;
-            const q = document.getElementById("quantidade").value;
-            
-            if(!r || !m || !v) return alert("Preencha os campos obrigatórios!");
+    dados.push({
+        revendedor,
+        servidor,
+        quantidade: qtdNum,
+        master: masterTotal,
+        custoUnitario: custoUnitario.toFixed(2),
+        revenda: revendaTotal,
+        vendaUnitario: vendaUnitario.toFixed(2),
+        lucro: lucro.toFixed(2)
+    });
 
-            try {
-                await addDoc(ref, {
-                    revendedor: r,
-                    servidor: s,
-                    quantidade: q,
-                    master: m,
-                    revenda: v,
-                    lucro: v - m,
-                    data: new Date().getTime()
-                });
-                alert("Dados salvos na nuvem!");
-                document.getElementById("revendedor").value = "";
-                document.getElementById("master").value = "";
-                document.getElementById("revenda").value = "";
-            } catch (error) {
-                console.error("Erro ao salvar:", error);
-                alert("Erro ao conectar com o Firebase.");
-            }
-        };
+    atualizar();
+    
+    // Limpar campos
+    document.getElementById("revendedor").value = "";
+    document.getElementById("servidor").value = "";
+    document.getElementById("master").value = "";
+    document.getElementById("revenda").value = "";
+}
 
-        // LER EM TEMPO REAL
-        const qAlt = query(ref, orderBy("data", "desc"));
-        onSnapshot(qAlt, (snap) => {
-            const corpo = document.getElementById("tabela-corpo");
-            corpo.innerHTML = "";
-            let lucroTotal = 0;
+function atualizar(){
+    let tabela = document.getElementById("tabela");
+    tabela.innerHTML = "";
 
-            snap.forEach((d) => {
-                const i = d.data();
-                lucroTotal += i.lucro;
-                const tr = document.createElement("tr");
-                tr.innerHTML = `
-                    <td>${i.revendedor}</td>
-                    <td>${i.quantidade}</td>
-                    <td>R$ ${i.master.toFixed(2)}</td>
-                    <td>R$ ${i.revenda.toFixed(2)}</td>
-                    <td class="lucro-txt">R$ ${i.lucro.toFixed(2)}</td>
-                    <td>
-                        <button class="btn-del" data-id="${d.id}">Excluir</button>
-                    </td>
-                `;
-                corpo.appendChild(tr);
-            });
-            document.getElementById("lucro-geral").innerText = "R$ " + lucroTotal.toFixed(2);
+    dados.forEach((item, index) => {
+        tabela.innerHTML += `
+        <tr>
+            <td>${item.revendedor}</td>
+            <td>${item.servidor}</td>
+            <td>${item.quantidade}</td>
+            <td>R$ ${item.master}</td>
+            <td class="unitario">R$ ${item.custoUnitario}</td>
+            <td>R$ ${item.revenda}</td>
+            <td class="unitario">R$ ${item.vendaUnitario}</td>
+            <td class="lucro">R$ ${item.lucro}</td>
+            <td>
+                <button class="copy" onclick="copiar(${index})">Copiar</button>
+            </td>
+        </tr>
+        `;
+    });
+}
 
-            // Evento de Excluir
-            document.querySelectorAll('.btn-del').forEach(btn => {
-                btn.onclick = async (e) => {
-                    const id = e.target.getAttribute('data-id');
-                    if(confirm("Excluir este registro permanentemente?")) {
-                        await deleteDoc(doc(db, "creditos_revenda", id));
-                    }
-                };
-            });
-        });
+function copiar(index){
+    let item = dados[index];
+    let texto = `RESUMO DE CRÉDITOS\n` +
+                `--------------------------\n` +
+                `Revendedor: ${item.revendedor}\n` +
+                `Servidor: ${item.servidor}\n` +
+                `Quantidade: ${item.quantidade} créditos\n` +
+                `Custo Unitário: R$ ${item.custoUnitario}\n` +
+                `Venda Unitária: R$ ${item.vendaUnitario}\n` +
+                `Total Revenda: R$ ${item.revenda}\n` +
+                `Lucro: R$ ${item.lucro}`;
 
-        // FILTRO DE BUSCA
-        document.getElementById("inputBusca").onkeyup = () => {
-            let input = document.getElementById("inputBusca").value.toUpperCase();
-            let tr = document.getElementById("tabela-corpo").getElementsByTagName("tr");
-            for (let i = 0; i < tr.length; i++) {
-                let td = tr[i].getElementsByTagName("td")[0];
-                if (td) {
-                    tr[i].style.display = td.innerText.toUpperCase().indexOf(input) > -1 ? "" : "none";
-                }
-            }
-        };
-    </script>
+    navigator.clipboard.writeText(texto);
+    alert("Dados detalhados copiados!");
+}
+</script>
+
 </body>
 </html>
