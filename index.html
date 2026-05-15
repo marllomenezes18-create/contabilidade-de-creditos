@@ -1,254 +1,39 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Central de Créditos - Completa</title>
+// Substitua o bloco antigo por este:
+const q = query(ref); // Removemos o 'orderBy' para testar a conexão pura
 
-<style>
-    body {
-        background: #0f172a;
-        color: #f1f5f9;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        padding: 20px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
+onSnapshot(q, (snap) => {
+    const corpo = document.getElementById("tabela-corpo");
+    corpo.innerHTML = "";
+    let lucroTotal = 0;
+
+    if (snap.empty) {
+        console.log("Nenhum dado encontrado no banco.");
     }
 
-    h1 { color: #38bdf8; text-shadow: 0 0 10px rgba(56, 189, 248, 0.2); }
-
-    .card {
-        background: #1e293b;
-        padding: 25px;
-        border-radius: 12px;
-        margin-bottom: 25px;
-        width: 100%;
-        max-width: 1000px;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
-        border: 1px solid #334155;
-    }
-
-    h2 {
-        font-size: 1.2rem;
-        margin-top: 0;
-        border-bottom: 2px solid #38bdf8;
-        display: inline-block;
-        padding-bottom: 5px;
-        margin-bottom: 20px;
-    }
-
-    input, select {
-        width: 100%;
-        padding: 12px;
-        margin-top: 12px;
-        border: 2px solid #334155;
-        border-radius: 8px;
-        background: #0f172a;
-        color: white;
-        box-sizing: border-box;
-    }
-
-    button {
-        width: 100%;
-        padding: 12px;
-        margin-top: 15px;
-        border: none;
-        border-radius: 8px;
-        background: #0284c7;
-        color: white;
-        font-weight: bold;
-        cursor: pointer;
-    }
-
-    button:hover { background: #0ea5e9; }
-
-    .table-container { overflow-x: auto; width: 100%; }
-
-    table {
-        width: 100%;
-        border-collapse: separate;
-        border-spacing: 0;
-        margin-top: 10px;
-    }
-
-    th, td {
-        padding: 12px;
-        text-align: left;
-        border-bottom: 1px solid #334155;
-        font-size: 0.85rem;
-    }
-
-    th {
-        background: #334155;
-        color: #38bdf8;
-        text-transform: uppercase;
-    }
-
-    .lucro { color: #4ade80; font-weight: bold; }
-    .unitario { color: #94a3b8; font-size: 0.75rem; }
-
-    /* Estilo dos Botões de Ação */
-    .btn-acoes {
-        display: flex;
-        gap: 5px;
-    }
-
-    .copy {
-        background: #16a34a;
-        padding: 8px;
-        font-size: 0.7rem;
-        margin-top: 0;
-    }
-
-    .delete {
-        background: #dc2626;
-        padding: 8px;
-        font-size: 0.7rem;
-        margin-top: 0;
-    }
-
-    .delete:hover { background: #ef4444; }
-</style>
-</head>
-<body>
-
-<h1>💳 Central de Créditos</h1>
-
-<div class="card">
-    <h2>Adicionar Crédito</h2>
-    <input type="text" id="revendedor" placeholder="Nome do Revendedor">
-    <input type="text" id="servidor" placeholder="Nome do Servidor (Ex: Five, Gold)">
-
-    <select id="quantidade">
-        <option value="">Selecione a Quantidade</option>
-        <option value="10">10 Créditos</option>
-        <option value="50">50 Créditos</option>
-        <option value="100">100 Créditos</option>
-        <option value="500">500 Créditos</option>
-        <option value="1000">1000 Créditos</option>
-    </select>
-
-    <input type="number" id="master" placeholder="Valor Total Master (Custo)">
-    <input type="number" id="revenda" placeholder="Valor Total Revenda (Venda)">
-
-    <button onclick="salvar()">Salvar Registro</button>
-</div>
-
-<div class="card">
-    <h2>Tabela de Registros Detalhada</h2>
-    <div class="table-container">
-        <table>
-            <thead>
-                <tr>
-                    <th>Revendedor</th>
-                    <th>Servidor</th>
-                    <th>Qtd</th>
-                    <th>Master (Total)</th>
-                    <th>Custo/Unid</th>
-                    <th>Revenda (Total)</th>
-                    <th>Venda/Unid</th>
-                    <th>Lucro</th>
-                    <th>Ações</th>
-                </tr>
-            </thead>
-            <tbody id="tabela"></tbody>
-        </table>
-    </div>
-</div>
-
-<script>
-let dados = [];
-
-function salvar(){
-    let revendedor = document.getElementById("revendedor").value;
-    let servidor = document.getElementById("servidor").value;
-    let quantidade = document.getElementById("quantidade").value;
-    let master = document.getElementById("master").value;
-    let revenda = document.getElementById("revenda").value;
-
-    if(!revendedor || !servidor || !quantidade || !master || !revenda) {
-        alert("Por favor, preencha todos os campos!");
-        return;
-    }
-
-    let qtdNum = Number(quantidade);
-    let masterTotal = Number(master);
-    let revendaTotal = Number(revenda);
-
-    let custoUnitario = masterTotal / qtdNum;
-    let vendaUnitario = revendaTotal / qtdNum;
-    let lucro = revendaTotal - masterTotal;
-
-    dados.push({
-        revendedor,
-        servidor,
-        quantidade: qtdNum,
-        master: masterTotal,
-        custoUnitario: custoUnitario.toFixed(2),
-        revenda: revendaTotal,
-        vendaUnitario: vendaUnitario.toFixed(2),
-        lucro: lucro.toFixed(2)
-    });
-
-    atualizar();
-    
-    // Limpar campos
-    document.getElementById("revendedor").value = "";
-    document.getElementById("servidor").value = "";
-    document.getElementById("master").value = "";
-    document.getElementById("revenda").value = "";
-}
-
-function atualizar(){
-    let tabela = document.getElementById("tabela");
-    tabela.innerHTML = "";
-
-    dados.forEach((item, index) => {
-        tabela.innerHTML += `
-        <tr>
-            <td>${item.revendedor}</td>
-            <td><strong>${item.servidor}</strong></td>
-            <td>${item.quantidade}</td>
-            <td>R$ ${item.master}</td>
-            <td class="unitario">R$ ${item.custoUnitario}</td>
-            <td>R$ ${item.revenda}</td>
-            <td class="unitario">R$ ${item.vendaUnitario}</td>
-            <td class="lucro">R$ ${item.lucro}</td>
-            <td>
-                <div class="btn-acoes">
-                    <button class="copy" onclick="copiar(${index})">Copiar</button>
-                    <button class="delete" onclick="excluir(${index})">Excluir</button>
-                </div>
-            </td>
-        </tr>
+    snap.forEach((d) => {
+        const i = d.data();
+        lucroTotal += (i.lucro || 0);
+        
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+            <td>${i.revendedor || 'Sem nome'}</td>
+            <td>${i.quantidade || 0}</td>
+            <td>R$ ${(i.master || 0).toFixed(2)}</td>
+            <td>R$ ${(i.revenda || 0).toFixed(2)}</td>
+            <td class="lucro-txt">R$ ${(i.lucro || 0).toFixed(2)}</td>
+            <td><button class="btn-del" data-id="${d.id}">Excluir</button></td>
         `;
+        corpo.appendChild(tr);
     });
-}
+    document.getElementById("lucro-geral").innerText = "R$ " + lucroTotal.toFixed(2);
 
-function excluir(index) {
-    if (confirm("Deseja realmente excluir o registro de " + dados[index].revendedor + "?")) {
-        dados.splice(index, 1); // Remove o item do array
-        atualizar(); // Atualiza a tabela
-    }
-}
-
-function copiar(index){
-    let item = dados[index];
-    let texto = `RESUMO DE CRÉDITOS\n` +
-                `--------------------------\n` +
-                `Revendedor: ${item.revendedor}\n` +
-                `Servidor: ${item.servidor}\n` +
-                `Quantidade: ${item.quantidade} créditos\n` +
-                `Custo Unitário: R$ ${item.custoUnitario}\n` +
-                `Venda Unitária: R$ ${item.vendaUnitario}\n` +
-                `Total Revenda: R$ ${item.revenda}\n` +
-                `Lucro: R$ ${item.lucro}`;
-
-    navigator.clipboard.writeText(texto);
-    alert("Dados copiados!");
-}
-</script>
-
-</body>
-</html>
+    // Reatribui os eventos de excluir
+    document.querySelectorAll('.btn-del').forEach(btn => {
+        btn.onclick = async (e) => {
+            const id = e.target.getAttribute('data-id');
+            if(confirm("Deseja realmente excluir este registro?")) {
+                await deleteDoc(doc(db, "creditos_revenda", id));
+            }
+        };
+    });
+});
