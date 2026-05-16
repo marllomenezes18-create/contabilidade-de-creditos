@@ -24,9 +24,11 @@
         th { background: #334155; color: #38bdf8; padding: 12px; text-align: left; font-size: 12px; text-transform: uppercase; }
         td { padding: 12px; border-bottom: 1px solid #334155; font-size: 14px; }
         .lucro-txt { color: #4ade80; font-weight: bold; }
-        .botoes-linha { display: flex; gap: 6px; margin-top: 5px; }
-        .btn-del { background: #ef4444; padding: 4px 8px; font-size: 11px; cursor: pointer; border-radius: 4px; border: none; color: white; }
-        .btn-edit { background: #3b82f6; padding: 4px 8px; font-size: 11px; cursor: pointer; border-radius: 4px; border: none; color: white; }
+        .acoes-flex { display: flex; gap: 8px; }
+        .btn-del { background: #ef4444; padding: 8px 12px; font-size: 12px; cursor: pointer; border-radius: 4px; border: none; color: white; font-weight: bold; }
+        .btn-del:hover { background: #dc2626; }
+        .btn-edit { background: #3b82f6; padding: 8px 12px; font-size: 12px; cursor: pointer; border-radius: 4px; border: none; color: white; font-weight: bold; }
+        .btn-edit:hover { background: #2563eb; }
     </style>
 </head>
 <body>
@@ -68,12 +70,13 @@
             <table>
                 <thead>
                     <tr>
-                        <th>Revendedor / Ações</th>
+                        <th>Revendedor</th>
                         <th>Servidor</th>
                         <th>Qtd</th>
                         <th>Master</th>
                         <th>Venda</th>
                         <th>Lucro</th>
+                        <th>Ações</th>
                     </tr>
                 </thead>
                 <tbody id="tabela-corpo"></tbody>
@@ -100,7 +103,7 @@
 
         let idEdicao = null;
 
-        // Salvar ou Editar
+        // Salvar ou Atualizar
         document.getElementById("btnSalvar").onclick = async () => {
             const r = document.getElementById("revendedor").value;
             const s = document.getElementById("servidor").value;
@@ -111,7 +114,8 @@
 
             try {
                 if (idEdicao) {
-                    await updateDoc(doc(db, "creditos_revenda", idEdicao), {
+                    const docRef = doc(db, "creditos_revenda", idEdicao);
+                    await updateDoc(docRef, {
                         revendedor: r,
                         servidor: s || "Não informado",
                         quantidade: document.getElementById("quantidade").value,
@@ -119,7 +123,8 @@
                         revenda: v,
                         lucro: v - m
                     });
-                    alert("Atualizado!");
+                    alert("Registro atualizado com sucesso!");
+                    
                     idEdicao = null;
                     document.getElementById("titulo-form").innerText = "Novo Registro";
                     document.getElementById("btnSalvar").innerText = "SALVAR NO FIREBASE";
@@ -134,19 +139,22 @@
                         lucro: v - m,
                         data: new Date().getTime()
                     });
-                    alert("Salvo!");
+                    alert("Salvo com sucesso!");
                 }
+
                 document.getElementById("revendedor").value = "";
                 document.getElementById("servidor").value = "";
                 document.getElementById("master").value = "";
                 document.getElementById("revenda").value = "";
             } catch (err) {
-                alert("Erro ao processar.");
+                console.error("Erro:", err);
+                alert("Erro ao processar a operação.");
             }
         };
 
-        // Atualização em Tempo Real
-        onSnapshot(query(ref), (snap) => {
+        // Escuta em tempo real
+        const q = query(ref); 
+        onSnapshot(q, (snap) => {
             const corpo = document.getElementById("tabela-corpo");
             corpo.innerHTML = "";
             let lucroTotal = 0;
@@ -157,18 +165,18 @@
                 
                 const tr = document.createElement("tr");
                 tr.innerHTML = `
-                    <td>
-                        <strong>${i.revendedor || 'Sem Nome'}</strong>
-                        <div class="botoes-linha">
-                            <button class="btn-edit" data-id="${d.id}" data-revendedor="${i.revendedor || ''}" data-servidor="${i.servidor || ''}" data-quantidade="${i.quantidade || '10'}" data-master="${i.master || 0}" data-revenda="${i.revenda || 0}">Editar</button>
-                            <button class="btn-del" data-id="${d.id}">Excluir</button>
-                        </div>
-                    </td>
+                    <td>${i.revendedor || 'Sem Nome'}</td>
                     <td>${i.servidor || 'Sem Servidor'}</td>
                     <td>${i.quantidade || 0}</td>
                     <td>R$ ${(i.master || 0).toFixed(2)}</td>
                     <td>R$ ${(i.revenda || 0).toFixed(2)}</td>
                     <td class="lucro-txt">R$ ${(i.lucro || 0).toFixed(2)}</td>
+                    <td>
+                        <div class="acoes-flex">
+                            <button class="btn-edit" data-id="${d.id}" data-revendedor="${i.revendedor || ''}" data-servidor="${i.servidor || ''}" data-quantidade="${i.quantidade || '10'}" data-master="${i.master || 0}" data-revenda="${i.revenda || 0}">Editar</button>
+                            <button class="btn-del" data-id="${d.id}">Excluir</button>
+                        </div>
+                    </td>
                 `;
                 corpo.appendChild(tr);
             });
@@ -177,8 +185,9 @@
             // Clique do botão Excluir
             document.querySelectorAll('.btn-del').forEach(btn => {
                 btn.onclick = async (e) => {
-                    if(confirm("Excluir este registro?")) {
-                        await deleteDoc(doc(db, "creditos_revenda", e.target.getAttribute('data-id')));
+                    const id = e.target.getAttribute('data-id');
+                    if(confirm("Deseja realmente excluir este registro?")) {
+                        await deleteDoc(doc(db, "creditos_revenda", id));
                     }
                 };
             });
@@ -187,6 +196,7 @@
             document.querySelectorAll('.btn-edit').forEach(btn => {
                 btn.onclick = (e) => {
                     idEdicao = e.target.getAttribute('data-id');
+                    
                     document.getElementById("revendedor").value = e.target.getAttribute('data-revendedor');
                     document.getElementById("servidor").value = e.target.getAttribute('data-servidor');
                     document.getElementById("quantidade").value = e.target.getAttribute('data-quantidade');
@@ -196,6 +206,7 @@
                     document.getElementById("titulo-form").innerText = "✍️ Editando Registro";
                     document.getElementById("btnSalvar").innerText = "ATUALIZAR REGISTRO 🔄";
                     document.getElementById("btnSalvar").classList.add("btn-atualizar");
+
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                 };
             });
