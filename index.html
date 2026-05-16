@@ -34,7 +34,7 @@
 <body>
 
     <div class="logo-container">
-        <img class="logo-img" src="https://lh3.googleusercontent.com/d/1TUKLE00-_aMifHTXy6C4qTguMSA5ZcF9" alt="Logo">
+        <img class="logo-img" src="https://docs.google.com/uc?export=download&id=1TUKLE00-_aMifHTXy6C4qTguMSA5ZcF9" alt="Logo">
     </div>
 
     <h1>💳 Central de Créditos V2</h1>
@@ -50,6 +50,7 @@
         <h2 id="titulo-form">Novo Registro</h2>
         <input type="text" id="revendedor" placeholder="Nome do Revendedor">
         <input type="text" id="servidor" placeholder="Nome do Servidor">
+        <input type="text" id="nomeMaster" placeholder="Nome do Master (De quem comprou)">
         <select id="quantidade">
             <option value="10">10 Créditos</option>
             <option value="50">50 Créditos</option>
@@ -57,8 +58,8 @@
             <option value="500">500 Créditos</option>
         </select>
         <div style="display: flex; gap: 10px;">
-            <input type="number" id="master" placeholder="Valor Master">
-            <input type="number" id="revenda" placeholder="Valor Venda">
+            <input type="number" id="master" placeholder="Valor Custo Master">
+            <input type="number" id="revenda" placeholder="Valor Venda Revendedor">
         </div>
         <button id="btnSalvar">SALVAR NO FIREBASE</button>
     </div>
@@ -72,9 +73,10 @@
                     <tr>
                         <th>Revendedor</th>
                         <th>Servidor</th>
+                        <th>Master Origem</th>
                         <th>Qtd</th>
-                        <th>Master</th>
-                        <th>Venda</th>
+                        <th>Custo M.</th>
+                        <th>Venda R.</th>
                         <th>Lucro</th>
                         <th>Ações</th>
                     </tr>
@@ -107,10 +109,11 @@
         document.getElementById("btnSalvar").onclick = async () => {
             const r = document.getElementById("revendedor").value;
             const s = document.getElementById("servidor").value;
+            const nm = document.getElementById("nomeMaster").value;
             const m = Number(document.getElementById("master").value);
             const v = Number(document.getElementById("revenda").value);
             
-            if(!r || !m || !v) return alert("Por favor, preencha o Nome, Master e Venda!");
+            if(!r || !m || !v) return alert("Por favor, preencha o Nome, Custo Master e Venda!");
 
             try {
                 if (idEdicao) {
@@ -118,6 +121,7 @@
                     await updateDoc(docRef, {
                         revendedor: r,
                         servidor: s || "Não informado",
+                        nomeMaster: nm || "Não informado",
                         quantidade: document.getElementById("quantidade").value,
                         master: m,
                         revenda: v,
@@ -133,6 +137,7 @@
                     await addDoc(ref, {
                         revendedor: r,
                         servidor: s || "Não informado",
+                        nomeMaster: nm || "Não informado",
                         quantidade: document.getElementById("quantidade").value,
                         master: m,
                         revenda: v,
@@ -144,6 +149,7 @@
 
                 document.getElementById("revendedor").value = "";
                 document.getElementById("servidor").value = "";
+                document.getElementById("nomeMaster").value = "";
                 document.getElementById("master").value = "";
                 document.getElementById("revenda").value = "";
             } catch (err) {
@@ -167,13 +173,14 @@
                 tr.innerHTML = `
                     <td>${i.revendedor || 'Sem Nome'}</td>
                     <td>${i.servidor || 'Sem Servidor'}</td>
+                    <td>${i.nomeMaster || 'Não informado'}</td>
                     <td>${i.quantidade || 0}</td>
                     <td>R$ ${(i.master || 0).toFixed(2)}</td>
                     <td>R$ ${(i.revenda || 0).toFixed(2)}</td>
                     <td class="lucro-txt">R$ ${(i.lucro || 0).toFixed(2)}</td>
                     <td>
                         <div class="acoes-flex">
-                            <button class="btn-edit" data-id="${d.id}" data-revendedor="${i.revendedor || ''}" data-servidor="${i.servidor || ''}" data-quantidade="${i.quantidade || '10'}" data-master="${i.master || 0}" data-revenda="${i.revenda || 0}">Editar</button>
+                            <button class="btn-edit" data-id="${d.id}" data-revendedor="${i.revendedor || ''}" data-servidor="${i.servidor || ''}" data-nomemaster="${i.nomeMaster || ''}" data-quantidade="${i.quantidade || '10'}" data-master="${i.master || 0}" data-revenda="${i.revenda || 0}">Editar</button>
                             <button class="btn-del" data-id="${d.id}">Excluir</button>
                         </div>
                     </td>
@@ -199,6 +206,7 @@
                     
                     document.getElementById("revendedor").value = e.target.getAttribute('data-revendedor');
                     document.getElementById("servidor").value = e.target.getAttribute('data-servidor');
+                    document.getElementById("nomeMaster").value = e.target.getAttribute('data-nomemaster');
                     document.getElementById("quantidade").value = e.target.getAttribute('data-quantidade');
                     document.getElementById("master").value = e.target.getAttribute('data-master');
                     document.getElementById("revenda").value = e.target.getAttribute('data-revenda');
