@@ -107,3 +107,114 @@
             try {
                 if (idEdicao) {
                     const docRef = doc(db, "creditos_revenda", idEdicao);
+                    await updateDoc(docRef, {
+                        revendedor: r,
+                        servidor: s || "Não informado",
+                        quantidade: document.getElementById("quantidade").value,
+                        master: m,
+                        revenda: v,
+                        lucro: v - m
+                    });
+                    alert("Registro atualizado com sucesso!");
+                    
+                    idEdicao = null;
+                    document.getElementById("titulo-form").innerText = "Novo Registro";
+                    document.getElementById("btnSalvar").innerText = "SALVAR NO FIREBASE";
+                    document.getElementById("btnSalvar").classList.remove("btn-atualizar");
+                } else {
+                    await addDoc(ref, {
+                        revendedor: r,
+                        servidor: s || "Não informado",
+                        quantidade: document.getElementById("quantidade").value,
+                        master: m,
+                        revenda: v,
+                        lucro: v - m,
+                        data: new Date().getTime()
+                    });
+                    alert("Salvo com sucesso!");
+                }
+
+                document.getElementById("revendedor").value = "";
+                document.getElementById("servidor").value = "";
+                document.getElementById("master").value = "";
+                document.getElementById("revenda").value = "";
+            } catch (err) {
+                console.error("Erro:", err);
+                alert("Erro ao processar a operação.");
+            }
+        };
+
+        // Escuta em tempo real
+        const q = query(ref); 
+        onSnapshot(q, (snap) => {
+            const corpo = document.getElementById("tabela-corpo");
+            corpo.innerHTML = "";
+            let lucroTotal = 0;
+
+            snap.forEach((d) => {
+                const i = d.data();
+                lucroTotal += (i.lucro || 0);
+                
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td>${i.revendedor || 'Sem Nome'}</td>
+                    <td>${i.servidor || 'Sem Servidor'}</td>
+                    <td>${i.quantidade || 0}</td>
+                    <td>R$ ${(i.master || 0).toFixed(2)}</td>
+                    <td>R$ ${(i.revenda || 0).toFixed(2)}</td>
+                    <td class="lucro-txt">R$ ${(i.lucro || 0).toFixed(2)}</td>
+                    <td>
+                        <div class="acoes-flex">
+                            <button class="btn-edit" data-id="${d.id}" data-revendedor="${i.revendedor || ''}" data-servidor="${i.servidor || ''}" data-quantidade="${i.quantidade || '10'}" data-master="${i.master || 0}" data-revenda="${i.revenda || 0}">Editar</button>
+                            <button class="btn-del" data-id="${d.id}">Excluir</button>
+                        </div>
+                    </td>
+                `;
+                corpo.appendChild(tr);
+            });
+            document.getElementById("lucro-geral").innerText = "R$ " + lucroTotal.toFixed(2);
+
+            // Clique do botão Excluir
+            document.querySelectorAll('.btn-del').forEach(btn => {
+                btn.onclick = async (e) => {
+                    const id = e.target.getAttribute('data-id');
+                    if(confirm("Deseja realmente excluir este registro?")) {
+                        await deleteDoc(doc(db, "creditos_revenda", id));
+                    }
+                };
+            });
+
+            // Clique do botão Editar
+            document.querySelectorAll('.btn-edit').forEach(btn => {
+                btn.onclick = (e) => {
+                    idEdicao = e.target.getAttribute('data-id');
+                    
+                    document.getElementById("revendedor").value = e.target.getAttribute('data-revendedor');
+                    document.getElementById("servidor").value = e.target.getAttribute('data-servidor');
+                    document.getElementById("quantidade").value = e.target.getAttribute('data-quantidade');
+                    document.getElementById("master").value = e.target.getAttribute('data-master');
+                    document.getElementById("revenda").value = e.target.getAttribute('data-revenda');
+
+                    document.getElementById("titulo-form").innerText = "✍️ Editando Registro";
+                    document.getElementById("btnSalvar").innerText = "ATUALIZAR REGISTRO 🔄";
+                    document.getElementById("btnSalvar").classList.add("btn-atualizar");
+
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                };
+            });
+        });
+
+        // Filtro de Busca
+        document.getElementById("inputBusca").onkeyup = () => {
+            let input = document.getElementById("inputBusca").value.toUpperCase();
+            let tr = document.getElementById("tabela-corpo").getElementsByTagName("tr");
+            for (let i = 0; i < tr.length; i++) {
+                let td = tr[i].getElementsByTagName("td")[0];
+                if (td) {
+                    tr[i].style.display = td.innerText.toUpperCase().indexOf(input) > -1 ? "" : "none";
+                }
+            }
+        };
+    </script>
+</body>
+</html>
